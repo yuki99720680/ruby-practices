@@ -29,9 +29,8 @@ def console_out(dates, today)
     else
       print "#{date.day.to_s.rjust(2)} "
     end
-    if date.saturday?
-      puts ""
-    end
+
+    puts "" if date.saturday?
   end
 end
 
