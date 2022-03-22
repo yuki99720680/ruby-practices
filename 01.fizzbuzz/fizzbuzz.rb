@@ -10,6 +10,6 @@ def fizzbuzz(num)
   end
 end
 
-[*1..10].each do |num|
+(1..10).each do |num|
   fizzbuzz(num)
 end
