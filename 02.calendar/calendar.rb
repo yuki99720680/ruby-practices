@@ -3,22 +3,6 @@
 require 'date'
 require 'optparse'
 
-today = Date.today
-
-DEFAULT_YEAR = today.year
-DEFAULT_MONTH = today.month
-
-year = DEFAULT_YEAR
-month = DEFAULT_MONTH
-
-opt = OptionParser.new
-
-opt.on('-y YEAR') {|v| year = v.to_i }
-opt.on('-m MONTH') {|v| month = v.to_i }
-opt.parse(ARGV)
-
-date = Date.new(year, month, 1)
-
 def generate_days_list(year, month)
   current_day = 1
   last_day = Date.new(year, month, -1).day
@@ -36,7 +20,7 @@ def generate_days_list(year, month)
     current_day += 1
   end
 
-  return days
+  days
 end
 
 def console_out(days, date, today)
@@ -71,6 +55,19 @@ def console_out(days, date, today)
     end
   end
 end
+
+today = Date.today
+
+year = today.year
+month = today.month
+
+opt = OptionParser.new
+
+opt.on('-y YEAR') {|v| year = v.to_i }
+opt.on('-m MONTH') {|v| month = v.to_i }
+opt.parse(ARGV)
+
+date = Date.new(year, month, 1)
 
 days = generate_days_list(year, month)
 console_out(days, date, today)
