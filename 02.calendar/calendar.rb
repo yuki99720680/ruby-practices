@@ -45,7 +45,5 @@ opt.on('-y YEAR') {|v| year = v.to_i }
 opt.on('-m MONTH') {|v| month = v.to_i }
 opt.parse(ARGV)
 
-date = Date.new(year, month, 1)
-
 dates = generate_dates_list(year, month)
 console_out(dates, today)
