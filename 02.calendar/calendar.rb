@@ -4,16 +4,14 @@ require 'date'
 require 'optparse'
 
 def generate_dates_list(year, month)
-  current_day = 1
   last_day = Date.new(year, month, -1).day
   dates = []
 
-  while current_day <= last_day
-    date = Date.new(year, month, current_day)
+  [*1..last_day].each do |day|
+    date = Date.new(year, month, day)
     dates << date
-    current_day += 1
   end
-
+  
   dates
 end
 
