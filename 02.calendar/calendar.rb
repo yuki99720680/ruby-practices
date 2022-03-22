@@ -44,13 +44,13 @@ def console_out(days, date, today)
     print space * 6 
   end
   
-  for i in 0..days.length-1 do
-    if date.year == today.year && date.month == today.month && days[i][0] == today.day.to_s
+  days.each do |day, day_of_week|
+    if date.year == today.year && date.month == today.month && day == today.day.to_s
       print "\e[7m" + days[i][0] + "\e[0m" + " "
     else
-      print days[i][0] + " "
+      print day + " "
     end
-    if days[i][1] == "Sat"
+    if day_of_week == "Sat"
       puts ""
     end
   end
