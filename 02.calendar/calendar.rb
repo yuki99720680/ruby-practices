@@ -28,12 +28,12 @@ def generate_dates(year, month)
 end
 
 def console_out(dates, today)
-  puts "      #{dates[0].month}月 #{dates[0].year}"
+  puts "      #{dates.first.month}月 #{dates.first.year}"
   puts '日 月 火 水 木 金 土'
 
   space = '   '
 
-  print space * dates[0].wday
+  print space * dates.first.wday
 
   dates.each do |date|
     if date == today
