@@ -4,6 +4,22 @@
 require 'date'
 require 'optparse'
 
+def main
+  today = Date.today
+
+  year = today.year
+  month = today.month
+
+  opt = OptionParser.new
+
+  opt.on('-y YEAR') { |v| year = v.to_i }
+  opt.on('-m MONTH') { |v| month = v.to_i }
+  opt.parse(ARGV)
+
+  dates = generate_dates(year, month)
+  console_out(dates, today)
+end
+
 def generate_dates(year, month)
   date_from = Date.new(year, month, 1)
   date_to = Date.new(year, month, -1)
@@ -30,16 +46,4 @@ def console_out(dates, today)
   end
 end
 
-today = Date.today
-
-year = today.year
-month = today.month
-
-opt = OptionParser.new
-
-opt.on('-y YEAR') { |v| year = v.to_i }
-opt.on('-m MONTH') { |v| month = v.to_i }
-opt.parse(ARGV)
-
-dates = generate_dates(year, month)
-console_out(dates, today)
+main
