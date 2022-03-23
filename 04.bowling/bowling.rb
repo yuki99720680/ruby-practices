@@ -31,7 +31,7 @@ def strike?(frame)
 end
 
 def spare?(frame)
-  frame.sum == 10
+  !strike?(frame) && frame.sum == 10
 end
 
 def add_bonus_for_strike(frames, frame, index)
