@@ -28,7 +28,9 @@ def generate_dates(year, month)
 end
 
 def console_out(dates, today)
-  puts "      #{dates.first.month}月 #{dates.first.year}"
+  first_date = dates.first
+
+  puts "      #{first_date.month}月 #{first_date.year}"
   puts '日 月 火 水 木 金 土'
 
   space = '   '
