@@ -18,10 +18,8 @@ def convert_scores_to_shots(scores)
 end
 
 def convert_shots_to_frames(shots)
-  frames = []
-  shots.each_slice(2) do |shot|
-    frames << shot
-  end
+  frames = shots.each_slice(2).to_a
+
   unless frames[11].nil?
     frames[10] += frames[11]
     frames.pop
