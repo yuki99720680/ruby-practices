@@ -4,7 +4,7 @@
 require 'date'
 require 'optparse'
 
-def generate_dates_list(year, month)
+def generate_dates(year, month)
   date_from = Date.new(year, month, 1)
   date_to = Date.new(year, month, -1)
 
@@ -41,5 +41,5 @@ opt.on('-y YEAR') { |v| year = v.to_i }
 opt.on('-m MONTH') { |v| month = v.to_i }
 opt.parse(ARGV)
 
-dates = generate_dates_list(year, month)
+dates = generate_dates(year, month)
 console_out(dates, today)
