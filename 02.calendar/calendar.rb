@@ -4,15 +4,10 @@ require 'date'
 require 'optparse'
 
 def generate_dates_list(year, month)
-  last_day = Date.new(year, month, -1).day
-  dates = []
+  date_from = Date.new(year, month, 1)
+  date_to = Date.new(year, month, -1)
 
-  (1..last_day).each do |day|
-    date = Date.new(year, month, day)
-    dates << date
-  end
-  
-  dates
+  (date_from..date_to).to_a
 end
 
 def console_out(dates, today)
