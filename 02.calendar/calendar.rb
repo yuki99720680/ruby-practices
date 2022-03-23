@@ -37,7 +37,7 @@ def console_out(dates, today)
 
   dates.each do |date|
     if date == today
-      print "\e[7m#{date.day}\e[0m "
+      print "\e[7m#{date.day.to_s.rjust(2)}\e[0m "
     else
       print "#{date.day.to_s.rjust(2)} "
     end
