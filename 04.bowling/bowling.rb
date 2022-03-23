@@ -20,14 +20,9 @@ end
 def convert_shots_to_frames(shots)
   frames = shots.each_slice(2).to_a
 
-  unless frames[11].nil?
-    frames[10] += frames[11]
-    frames.pop
-  end
-  unless frames[10].nil?
-    frames[9] += frames[10]
-    frames.pop
-  end
+  frames[10..].flatten unless frames[11].nil?
+  frames[9..].flatten unless frames[10].nil?
+
   frames
 end
 
