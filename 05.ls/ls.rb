@@ -30,12 +30,12 @@ def add_padding(dirs)
 end
 
 def output(dirs)
-  outs = [[nil], [nil], [nil]]
+  height = (dirs.size / 3.0).ceil
+  outs = Array.new(height) { [nil] }
 
   dirs.each_with_index do |dir, index|
-    outs[0] << dir if (index % 3).zero?
-    outs[1] << dir if index % 3 == 1
-    outs[2] << dir if index % 3 == 2
+    excess = index % height
+    outs[excess] << dir
   end
 
   outs.map!(&:join)
