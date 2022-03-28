@@ -35,7 +35,7 @@ def console_out(dates, today)
 
   space = '   '
 
-  print space * dates.first.wday
+  print space * first_date.wday
 
   dates.each do |date|
     if date == today
