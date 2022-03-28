@@ -18,12 +18,7 @@ def convert_scores_to_shots(scores)
 end
 
 def convert_shots_to_frames(shots)
-  frames = shots.each_slice(2).to_a
-
-  frames[10..].flatten unless frames[11].nil?
-  frames[9..].flatten unless frames[10].nil?
-
-  frames
+  shots.each_slice(2).to_a
 end
 
 def strike?(frame)
