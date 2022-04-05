@@ -6,8 +6,8 @@ COLUMN_COUNT = 3
 def main
   specify_path
   dirs = Dir.glob('*')
-  add_padding(dirs)
-  output(dirs)
+  dirs2 = add_padding(dirs)
+  output(dirs2)
 end
 
 def specify_path
@@ -28,7 +28,7 @@ end
 def add_padding(dirs)
   longgest_name = dirs.max_by(&:size)
   padding = longgest_name.size + 3
-  dirs.map! { |dir| dir.ljust(padding) }
+  dirs.map { |dir| dir.ljust(padding) }
 end
 
 def output(dirs)
@@ -40,9 +40,9 @@ def output(dirs)
     outs[excess] << dir
   end
 
-  outs.map!(&:join)
+  outs2 = outs.map(&:join)
 
-  outs.each do |out|
+  outs2.each do |out|
     puts out unless out.empty?
   end
 end
