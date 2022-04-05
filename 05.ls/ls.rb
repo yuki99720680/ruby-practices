@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-COLUMN = 3.0
+COLUMN_COUNT = 3
 
 def main
   specify_path
@@ -32,7 +32,7 @@ def add_padding(dirs)
 end
 
 def output(dirs)
-  height = (dirs.size / COLUMN).ceil
+  height = (dirs.size.to_f / COLUMN_COUNT).ceil
   outs = Array.new(height) { [nil] }
 
   dirs.each_with_index do |dir, index|
