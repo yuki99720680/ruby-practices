@@ -40,9 +40,8 @@ def output(padded_files)
     sorted_files[row_index] << padded_file
   end
 
-  joinned_files = sorted_files.map(&:join)
-
-  joinned_files.each do |joinned_file|
+  sorted_files.each do |sorted_file|
+    joinned_file = sorted_file.join
     puts joinned_file unless joinned_file.empty?
   end
 end
