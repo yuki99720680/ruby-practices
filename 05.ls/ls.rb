@@ -4,25 +4,28 @@
 COLUMN_COUNT = 3
 
 def main
-  specify_path
-  files = Dir.glob('*')
+  files = enumerate_files
   padded_files = add_padding(files)
   output(padded_files)
 end
 
-def specify_path
+def enumerate_files
   path = if ARGV[0].nil?
            './'
          else
            ARGV[0]
          end
 
-  begin
-    Dir.chdir(path)
-  rescue Errno::ENOENT
-    puts "ls: #{path}: No such file or directory"
-    exit
+  Dir.chdir(path) do
+    Dir.glob('*')
   end
+
+  #begin
+  #  
+  #rescue Errno::ENOENT
+  #  puts "ls: #{path}: No such file or directory"
+  #  exit
+  # end
 end
 
 def add_padding(files)
