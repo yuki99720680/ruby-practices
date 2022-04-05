@@ -5,9 +5,9 @@ COLUMN_COUNT = 3
 
 def main
   specify_path
-  dirs = Dir.glob('*')
-  dirs2 = add_padding(dirs)
-  output(dirs2)
+  files = Dir.glob('*')
+  padded_files = add_padding(files)
+  output(padded_files)
 end
 
 def specify_path
@@ -25,25 +25,25 @@ def specify_path
   end
 end
 
-def add_padding(dirs)
-  longgest_name = dirs.max_by(&:size)
+def add_padding(files)
+  longgest_name = files.max_by(&:size)
   padding = longgest_name.size + 3
-  dirs.map { |dir| dir.ljust(padding) }
+  files.map { |file| file.ljust(padding) }
 end
 
-def output(dirs)
-  height = (dirs.size.to_f / COLUMN_COUNT).ceil
-  outs = Array.new(height) { [nil] }
+def output(padded_files)
+  row_count = (padded_files.size.to_f / COLUMN_COUNT).ceil
+  sorted_files = Array.new(row_count) { [nil] }
 
-  dirs.each_with_index do |dir, index|
-    excess = index % height
-    outs[excess] << dir
+  padded_files.each_with_index do |padded_file, index|
+    row_index = index % row_count
+    sorted_files[row_index] << padded_file
   end
 
-  outs2 = outs.map(&:join)
+  joinned_files = sorted_files.map(&:join)
 
-  outs2.each do |out|
-    puts out unless out.empty?
+  joinned_files.each do |joinned_file|
+    puts joinned_file unless joinned_file.empty?
   end
 end
 
