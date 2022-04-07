@@ -28,13 +28,15 @@ PARMITION_TABLE = {
 }.freeze
 
 def main
+  glob_flag = 0
   long_format_flag = false
 
   opts = OptionParser.new
   opts.on('-l') { long_format_flag = true }
+  opts.on('-a') { glob_flag = File::FNM_DOTMATCH }
   opts.parse!(ARGV)
 
-  files = enumerate_files
+  files = enumerate_files(glob_flag)
   return unless files
 
   if long_format_flag
@@ -48,9 +50,9 @@ def main
   end
 end
 
-def enumerate_files
+def enumerate_files(glob_flag)
   if Dir.exist?(base_directory)
-    Dir.glob("#{base_directory}*")
+    Dir.glob("#{base_directory}*", glob_flag)
   else
     puts "ls: #{base_directory}: No such file or directory"
   end
