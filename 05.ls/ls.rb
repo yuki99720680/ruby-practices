@@ -1,22 +1,30 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'optparse'
+
 COLUMN_COUNT = 3
 
 def main
-  files = enumerate_files
+  glob_flag = 0
+
+  opts = OptionParser.new
+  opts.on('-a') { glob_flag = File::FNM_DOTMATCH }
+  opts.parse!(ARGV)
+
+  files = enumerate_files(glob_flag)
   return unless files
 
   padded_files = add_padding(files)
   output(padded_files)
 end
 
-def enumerate_files
+def enumerate_files(glob_flag)
   path = ARGV[0] || './'
 
   if Dir.exist?(path)
     Dir.chdir(path) do
-      Dir.glob('*')
+      Dir.glob('*', glob_flag)
     end
   else
     puts "ls: #{path}: No such file or directory"
