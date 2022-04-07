@@ -12,11 +12,7 @@ def main
 end
 
 def enumerate_files
-  path = if ARGV[0].nil?
-           './'
-         else
-           ARGV[0]
-         end
+  path = ARGV[0] || './'
 
   if Dir.exist?(path)
     Dir.chdir(path) do
