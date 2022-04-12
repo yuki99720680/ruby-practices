@@ -6,29 +6,35 @@ require 'optparse'
 COLUMN_COUNT = 3
 
 def main
-  glob_flag = 0
+  reverse_flag = false
 
   opts = OptionParser.new
-  opts.on('-a') { glob_flag = File::FNM_DOTMATCH }
+  opts.on('-r') { reverse_flag = true }
   opts.parse!(ARGV)
 
-  files = enumerate_files(glob_flag)
+  files = enumerate_files
   return unless files
+
+  files = reverse_files(files) if reverse_flag
 
   padded_files = add_padding(files)
   output(padded_files)
 end
 
-def enumerate_files(glob_flag)
+def enumerate_files
   path = ARGV[0] || './'
 
   if Dir.exist?(path)
     Dir.chdir(path) do
-      Dir.glob('*', glob_flag)
+      Dir.glob('*')
     end
   else
     puts "ls: #{path}: No such file or directory"
   end
+end
+
+def reverse_files(files)
+  files.reverse
 end
 
 def add_padding(files)
