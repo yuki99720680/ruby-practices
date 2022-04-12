@@ -15,9 +15,9 @@ def main
   files = enumerate_files
   return unless files
 
-  files = reverse_files(files) if reverse_flag
+  ordered_files = order_files(files, reverse_flag)
 
-  padded_files = add_padding(files)
+  padded_files = add_padding(ordered_files)
   output(padded_files)
 end
 
@@ -33,14 +33,14 @@ def enumerate_files
   end
 end
 
-def reverse_files(files)
-  files.reverse
+def order_files(files, reverse_flag)
+  (files.reverse if reverse_flag) || files
 end
 
-def add_padding(files)
-  longgest_name = files.max_by(&:size)
+def add_padding(ordered_files)
+  longgest_name = ordered_files.max_by(&:size)
   padding = longgest_name.size + 3
-  files.map { |file| file.ljust(padding) }
+  ordered_files.map { |file| file.ljust(padding) }
 end
 
 def output(padded_files)
