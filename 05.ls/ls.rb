@@ -37,10 +37,10 @@ def order_files(files, reverse_flag)
   (files.reverse if reverse_flag) || files
 end
 
-def add_padding(ordered_files)
-  longgest_name = ordered_files.max_by(&:size)
+def add_padding(files)
+  longgest_name = files.max_by(&:size)
   padding = longgest_name.size + 3
-  ordered_files.map { |file| file.ljust(padding) }
+  files.map { |file| file.ljust(padding) }
 end
 
 def output(padded_files)
