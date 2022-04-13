@@ -34,7 +34,7 @@ def enumerate_files
 end
 
 def order_files(files, reverse_flag)
-  (files.reverse if reverse_flag) || files
+  reverse_flag ? files.reverse : files
 end
 
 def add_padding(files)
