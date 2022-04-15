@@ -5,7 +5,6 @@ require 'optparse'
 require 'etc'
 
 COLUMN_COUNT = 3
-
 FILE_TYPE_TABLE = {
   '01' => 'p',
   '02' => 'c',
@@ -15,7 +14,6 @@ FILE_TYPE_TABLE = {
   '12' => 'l',
   '14' => 's'
 }.freeze
-
 PARMITION_TABLE = {
   '0' => '---',
   '1' => '--x',
@@ -26,7 +24,6 @@ PARMITION_TABLE = {
   '6' => 'rw-',
   '7' => 'rwx'
 }.freeze
-
 SPECIAL_PARMITION_TABLE = {
   '1' => 't',
   '2' => 's',
@@ -40,24 +37,24 @@ def main
   opts.on('-l') { long_format_flag = true }
   opts.parse!(ARGV)
 
+  files = enumerate_files
+  return unless files
+
   if long_format_flag
-    files = enumerate_long_format_files
-    long_format_files = long_format(files)
+    long_format_files = long_format(files) # TODO; Refact
     total_block_size = calculate_total_block_size(long_format_files)
     padded_files = add_padding_long_format(long_format_files)
-    output_long_format(total_block_size, padded_files)
+    l_option_output(total_block_size, padded_files)
   else
-    files = enumerate_files
-    return unless files
-
-    padded_files = add_padding(files)
+    basename_files = basename_files(files)
+    padded_files = add_padding(basename_files)
     output(padded_files)
   end
 end
 
 private
 
-def enumerate_long_format_files
+def enumerate_files
   path = ARGV[0] || './'
 
   if Dir.exist?(path)
@@ -67,7 +64,7 @@ def enumerate_long_format_files
   end
 end
 
-def long_format(files)
+def long_format(files) # TODO; Refact
   long_format_files = []
 
   files.each do |file|
@@ -163,7 +160,7 @@ def calculate_total_block_size(long_format_files)
   total_block_size
 end
 
-def output_long_format(total_block_size, padded_files)
+def l_option_output(total_block_size, padded_files)
   puts "total #{total_block_size}"
   padded_files.each do |file|
     file.each_value do |f|
@@ -173,22 +170,18 @@ def output_long_format(total_block_size, padded_files)
   end
 end
 
-def enumerate_files
-  path = ARGV[0] || './'
-
-  if Dir.exist?(path)
-    Dir.chdir(path) do
-      Dir.glob('*')
-    end
-  else
-    puts "ls: #{path}: No such file or directory"
+def basename_files(files)
+  basename_files = []
+  files.each do |file|
+    basename_files << File.basename(file)
   end
+  basename_files
 end
 
-def add_padding(files)
-  longgest_name = files.max_by(&:size)
+def add_padding(basename_files)
+  longgest_name = basename_files.max_by(&:size)
   padding = longgest_name.size + 3
-  files.map { |file| file.ljust(padding) }
+  basename_files.map { |file| file.ljust(padding) }
 end
 
 def output(padded_files)
