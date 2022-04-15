@@ -41,8 +41,8 @@ def main
   return unless files
 
   if long_format_flag
-    long_format_files = long_format(files) # TODO; Refact
-    total_block_size = calculate_total_block_size(long_format_files)
+    long_format_files = add_states(files)
+    total_block_size = calculate_total_block_size(long_format_files) # TODO; Refact
     padded_files = add_padding_long_format(long_format_files)
     l_option_output(total_block_size, padded_files)
   else
@@ -64,51 +64,47 @@ def enumerate_files
   end
 end
 
-def long_format(files) # TODO; Refact
+def add_states(files)
   long_format_files = []
-
   files.each do |file|
-    mode = generate_mode(file)
-    long_format_file = generate_file_params(mode, file)
-    long_format_files << long_format_file
+    hash = {}
+    hash[:mode] = generate_mode(file)
+    hash[:nlink] = File.stat(file).nlink
+    hash[:uid] = Etc.getpwuid(File.stat(file).uid).name
+    hash[:gid] = Etc.getgrgid(File.stat(file).gid).name
+    hash[:size] = File.stat(file).size
+    hash[:block] = File.stat(file).blocks
+    hash[:mtime] = File.stat(file)
+    hash[:name] = File.basename(file)
+    hash[:symlink] = File.readlink(hash[:name]) if File.symlink?(hash[:name])
+    long_format_files << hash
   end
-
   long_format_files
 end
 
 def generate_mode(file)
-  mode_characters = {}
   mode_numbers = File.stat(file).mode.to_s(8).rjust(6, '0').split(//)
+  mode_characters = {}
   mode_characters[:file_type] = FILE_TYPE_TABLE[mode_numbers[0..1].join]
   mode_characters[:owner_parmition] = PARMITION_TABLE[mode_numbers[3]]
   mode_characters[:group_parmition] = PARMITION_TABLE[mode_numbers[4]]
   other_parmition = PARMITION_TABLE[mode_numbers[5]].dup
   special_parmition = SPECIAL_PARMITION_TABLE[mode_numbers[2]]
-  unless special_parmition.nil?
-    other_parmition[-1] = other_parmition[-1] == 'x' ? special_parmition : special_parmition.upcase
-  end
+  other_parmition[-1] = other_parmition[-1] == 'x' ? special_parmition : special_parmition.upcase if special_parmition
   mode_characters[:other_parmition] = other_parmition
-
   mode = ''
   mode_characters.each_value do |mode_character|
     mode += mode_character
   end
-
   mode
 end
 
-def generate_file_params(mode, file)
-  hash = {}
-  hash[:mode] = mode
-  hash[:nlink] = File.stat(file).nlink
-  hash[:uid] = Etc.getpwuid(File.stat(file).uid).name
-  hash[:gid] = Etc.getgrgid(File.stat(file).gid).name
-  hash[:size] = File.stat(file).size
-  hash[:block] = File.stat(file).blocks
-  hash[:mtime] = File.stat(file)
-  hash[:name] = File.basename(file)
-  hash[:symlink] = File.readlink(hash[:name]) if File.symlink?(hash[:name])
-  hash
+def calculate_total_block_size(long_format_files) # TODO; Refact
+  total_block_size = 0
+  long_format_files.each do |file|
+    total_block_size += file[:block] if File.file?(file[:name]) && !File.symlink?(file[:name])
+  end
+  total_block_size
 end
 
 def add_padding_long_format(long_format_files)
@@ -150,14 +146,6 @@ def calculate_padding_size(long_format_files)
   gid_paddinng = longgest_gid.size + 2
 
   [nlink_padding, uid_paddinng, gid_paddinng]
-end
-
-def calculate_total_block_size(long_format_files)
-  total_block_size = 0
-  long_format_files.each do |file|
-    total_block_size += file[:block] if File.file?(file[:name]) && !File.symlink?(file[:name])
-  end
-  total_block_size
 end
 
 def l_option_output(total_block_size, padded_files)
