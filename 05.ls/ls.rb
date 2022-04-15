@@ -2,23 +2,175 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require 'etc'
 
 COLUMN_COUNT = 3
 
+FILE_TYPE_TABLE = {
+  '01' => 'p',
+  '02' => 'c',
+  '04' => 'd',
+  '06' => 'b',
+  '10' => '-',
+  '12' => 'l',
+  '14' => 's'
+}.freeze
+
+PARMITION_TABLE = {
+  '0' => '---',
+  '1' => '--x',
+  '2' => '-w-',
+  '3' => '-wx',
+  '4' => 'r--',
+  '5' => 'r-x',
+  '6' => 'rw-',
+  '7' => 'rwx'
+}.freeze
+
+SPECIAL_PARMITION_TABLE = {
+  '1' => 't',
+  '2' => 's',
+  '4' => 's'
+}.freeze
+
 def main
-  reverse_flag = false
+  long_format_flag = false
 
   opts = OptionParser.new
-  opts.on('-r') { reverse_flag = true }
+  opts.on('-l') { long_format_flag = true }
   opts.parse!(ARGV)
 
-  files = enumerate_files
-  return unless files
+  if long_format_flag
+    files = enumerate_long_format_files
+    long_format_files = long_format(files)
+    total_block_size = calculate_total_block_size(long_format_files)
+    padded_files = add_padding_long_format(long_format_files)
+    output_long_format(total_block_size, padded_files)
+  else
+    files = enumerate_files
+    return unless files
 
-  ordered_files = order_files(files, reverse_flag)
+    padded_files = add_padding(files)
+    output(padded_files)
+  end
+end
 
-  padded_files = add_padding(ordered_files)
-  output(padded_files)
+private
+
+def enumerate_long_format_files
+  path = ARGV[0] || './'
+
+  if Dir.exist?(path)
+    Dir.glob("#{path}*")
+  else
+    puts "ls: #{path}: No such file or directory"
+  end
+end
+
+def long_format(files)
+  long_format_files = []
+
+  files.each do |file|
+    mode = generate_mode(file)
+    long_format_file = generate_file_params(mode, file)
+    long_format_files << long_format_file
+  end
+
+  long_format_files
+end
+
+def generate_mode(file)
+  mode_characters = {}
+  mode_numbers = File.stat(file).mode.to_s(8).rjust(6, '0').split(//)
+  mode_characters[:file_type] = FILE_TYPE_TABLE[mode_numbers[0..1].join]
+  mode_characters[:owner_parmition] = PARMITION_TABLE[mode_numbers[3]]
+  mode_characters[:group_parmition] = PARMITION_TABLE[mode_numbers[4]]
+  other_parmition = PARMITION_TABLE[mode_numbers[5]].dup
+  special_parmition = SPECIAL_PARMITION_TABLE[mode_numbers[2]]
+  unless special_parmition.nil?
+    other_parmition[-1] = other_parmition[-1] == 'x' ? special_parmition : special_parmition.upcase
+  end
+  mode_characters[:other_parmition] = other_parmition
+
+  mode = ''
+  mode_characters.each_value do |mode_character|
+    mode += mode_character
+  end
+
+  mode
+end
+
+def generate_file_params(mode, file)
+  hash = {}
+  hash[:mode] = mode
+  hash[:nlink] = File.stat(file).nlink
+  hash[:uid] = Etc.getpwuid(File.stat(file).uid).name
+  hash[:gid] = Etc.getgrgid(File.stat(file).gid).name
+  hash[:size] = File.stat(file).size
+  hash[:block] = File.stat(file).blocks
+  hash[:mtime] = File.stat(file)
+  hash[:name] = File.basename(file)
+  hash[:symlink] = File.readlink(hash[:name]) if File.symlink?(hash[:name])
+  hash
+end
+
+def add_padding_long_format(long_format_files)
+  nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(long_format_files)
+  formated_files = []
+  long_format_files.each do |file|
+    hash = {}
+    hash[:mode] = file[:mode].to_s.ljust(10)
+    hash[:nlink] = file[:nlink].to_s.rjust(nlink_padding)
+    hash[:uid] = file[:uid].to_s.rjust(uid_paddinng)
+    hash[:gid] = file[:gid].to_s.rjust(gid_paddinng)
+    hash[:size] = file[:size].to_s.rjust(6)
+    hash[:mtime] = file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
+    hash[:name] = " #{file[:name]}"
+    hash[:symlink] = " -> #{file[:symlink]}" if file[:symlink]
+    formated_files << hash
+  end
+
+  formated_files
+end
+
+def calculate_padding_size(long_format_files)
+  nlinks = []
+  uids = []
+  gids = []
+
+  long_format_files.each do |file|
+    nlinks << file[:nlink].to_s
+    uids << file[:uid].to_s
+    gids << file[:gid].to_s
+  end
+
+  longgest_nlink = nlinks.max_by(&:size)
+  longgest_uid = uids.max_by(&:size)
+  longgest_gid = gids.max_by(&:size)
+
+  nlink_padding = longgest_nlink.size + 2
+  uid_paddinng = longgest_uid.size + 1
+  gid_paddinng = longgest_gid.size + 2
+
+  [nlink_padding, uid_paddinng, gid_paddinng]
+end
+
+def calculate_total_block_size(long_format_files)
+  total_block_size = 0
+  long_format_files.each do |file|
+    total_block_size += file[:block] if File.file?(file[:name]) && !File.symlink?(file[:name])
+  end
+  total_block_size
+end
+
+def output_long_format(total_block_size, padded_files)
+  puts "total #{total_block_size}"
+  padded_files.each do |file|
+    file.each_value do |f|
+      print f
+    end
+    puts ''
+  end
 end
 
 def enumerate_files
@@ -31,10 +183,6 @@ def enumerate_files
   else
     puts "ls: #{path}: No such file or directory"
   end
-end
-
-def order_files(files, reverse_flag)
-  reverse_flag ? files.reverse : files
 end
 
 def add_padding(files)
