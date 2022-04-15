@@ -40,10 +40,10 @@ def main
   files = enumerate_files
   return unless files
 
-  if long_format_flag
-    long_format_files = add_states(files)
-    total_block_size = calculate_total_block_size(long_format_files) # TODO; Refact
-    padded_files = add_padding_long_format(long_format_files)
+  if long_format_flag # ここらのメソッドを束ねて、三項演算子で読み出す
+    long_format_files = add_stats(files)
+    total_block_size = calculate_total_block_size(long_format_files)
+    padded_files = l_option_add_padding(long_format_files) # TODO; Refact
     l_option_output(total_block_size, padded_files)
   else
     basename_files = basename_files(files)
@@ -64,20 +64,20 @@ def enumerate_files
   end
 end
 
-def add_states(files)
+def add_stats(files)
   long_format_files = []
   files.each do |file|
-    hash = {}
-    hash[:mode] = generate_mode(file)
-    hash[:nlink] = File.stat(file).nlink
-    hash[:uid] = Etc.getpwuid(File.stat(file).uid).name
-    hash[:gid] = Etc.getgrgid(File.stat(file).gid).name
-    hash[:size] = File.stat(file).size
-    hash[:block] = File.stat(file).blocks
-    hash[:mtime] = File.stat(file)
-    hash[:name] = File.basename(file)
-    hash[:symlink] = File.readlink(hash[:name]) if File.symlink?(hash[:name])
-    long_format_files << hash
+    stat = {}
+    stat[:mode] = generate_mode(file)
+    stat[:nlink] = File.stat(file).nlink
+    stat[:uid] = Etc.getpwuid(File.stat(file).uid).name
+    stat[:gid] = Etc.getgrgid(File.stat(file).gid).name
+    stat[:size] = File.stat(file).size
+    stat[:block] = File.stat(file).blocks
+    stat[:mtime] = File.stat(file)
+    stat[:name] = File.basename(file)
+    stat[:symlink] = File.readlink(stat[:name]) if File.symlink?(stat[:name])
+    long_format_files << stat
   end
   long_format_files
 end
@@ -99,7 +99,7 @@ def generate_mode(file)
   mode
 end
 
-def calculate_total_block_size(long_format_files) # TODO; Refact
+def calculate_total_block_size(long_format_files)
   total_block_size = 0
   long_format_files.each do |file|
     total_block_size += file[:block] if File.file?(file[:name]) && !File.symlink?(file[:name])
@@ -107,44 +107,37 @@ def calculate_total_block_size(long_format_files) # TODO; Refact
   total_block_size
 end
 
-def add_padding_long_format(long_format_files)
+def l_option_add_padding(long_format_files) # TODO; Refact
   nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(long_format_files)
   formated_files = []
   long_format_files.each do |file|
-    hash = {}
-    hash[:mode] = file[:mode].to_s.ljust(10)
-    hash[:nlink] = file[:nlink].to_s.rjust(nlink_padding)
-    hash[:uid] = file[:uid].to_s.rjust(uid_paddinng)
-    hash[:gid] = file[:gid].to_s.rjust(gid_paddinng)
-    hash[:size] = file[:size].to_s.rjust(6)
-    hash[:mtime] = file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
-    hash[:name] = " #{file[:name]}"
-    hash[:symlink] = " -> #{file[:symlink]}" if file[:symlink]
-    formated_files << hash
+    stat = {}
+    stat[:mode] = file[:mode].to_s.ljust(10)
+    stat[:nlink] = file[:nlink].to_s.rjust(nlink_padding)
+    stat[:uid] = file[:uid].to_s.rjust(uid_paddinng)
+    stat[:gid] = file[:gid].to_s.rjust(gid_paddinng)
+    stat[:size] = file[:size].to_s.rjust(6)
+    stat[:mtime] = file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
+    stat[:name] = " #{file[:name]}"
+    stat[:symlink] = " -> #{file[:symlink]}" if file[:symlink]
+    formated_files << stat
   end
 
   formated_files
 end
 
-def calculate_padding_size(long_format_files)
-  nlinks = []
-  uids = []
-  gids = []
-
+def calculate_padding_size(long_format_files) # TODO; Refact
+  nlink_sizes = []
+  uid_sizes = []
+  gid_sizes = []
   long_format_files.each do |file|
-    nlinks << file[:nlink].to_s
-    uids << file[:uid].to_s
-    gids << file[:gid].to_s
+    nlink_sizes << file[:nlink].to_s.size
+    uid_sizes << file[:uid].to_s.size
+    gid_sizes << file[:gid].to_s.size
   end
-
-  longgest_nlink = nlinks.max_by(&:size)
-  longgest_uid = uids.max_by(&:size)
-  longgest_gid = gids.max_by(&:size)
-
-  nlink_padding = longgest_nlink.size + 2
-  uid_paddinng = longgest_uid.size + 1
-  gid_paddinng = longgest_gid.size + 2
-
+  nlink_padding = nlink_sizes.max + 2
+  uid_paddinng = uid_sizes.max + 1
+  gid_paddinng = gid_sizes.max + 2
   [nlink_padding, uid_paddinng, gid_paddinng]
 end
 
