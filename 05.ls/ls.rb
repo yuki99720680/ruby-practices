@@ -24,11 +24,6 @@ PARMITION_TABLE = {
   '6' => 'rw-',
   '7' => 'rwx'
 }.freeze
-SPECIAL_PARMITION_TABLE = {
-  '1' => 'Sticky bit',
-  '2' => 'SGID',
-  '4' => 'SUID'
-}.freeze
 
 def main
   long_format_flag = false
