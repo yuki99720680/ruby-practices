@@ -58,8 +58,7 @@ def enumerate_files
 end
 
 def build_file_stats(files)
-  file_stats = []
-  files.each do |file| # todo mapに置き換える
+  files.map do |file|
     stat = File.symlink?(file) ? File.lstat(file) : File.stat(file)
     file_info = {}
     file_info[:mode] = generate_mode(stat)
@@ -73,9 +72,8 @@ def build_file_stats(files)
     base_directory = generate_base_directory
     file_path = generate_file_path(base_directory, file_info[:name])
     file_info[:symlink] = File.readlink(file_path) if File.symlink?(file_path)
-    file_stats << file_info
+    file_info
   end
-  file_stats
 end
 
 def generate_mode(stat_raw)
@@ -118,7 +116,7 @@ end
 def l_option_output(total_block_size, long_format_files)
   nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(long_format_files)
   puts "total #{total_block_size}"
-  long_format_files.each do |file| # todo mapに置き換える
+  long_format_files.each do |file|
     print file[:mode].to_s.ljust(10)
     print file[:nlink].to_s.rjust(nlink_padding)
     print file[:uid].to_s.rjust(uid_paddinng)
