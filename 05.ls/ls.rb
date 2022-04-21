@@ -121,18 +121,14 @@ def l_option_output(total_block_size, long_format_files)
   nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(long_format_files)
   puts "total #{total_block_size}"
   long_format_files.each do |file| # todo mapに置き換える
-    file_info = {}
-    file_info[:mode] = file[:mode].to_s.ljust(10)
-    file_info[:nlink] = file[:nlink].to_s.rjust(nlink_padding)
-    file_info[:uid] = file[:uid].to_s.rjust(uid_paddinng)
-    file_info[:gid] = file[:gid].to_s.rjust(gid_paddinng)
-    file_info[:size] = file[:size].to_s.rjust(6)
-    file_info[:mtime] = file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
-    file_info[:name] = " #{file[:name]}"
-    file_info[:symlink] = " -> #{file[:symlink]}" if file[:symlink]
-    file_info.each_value do |f|
-      print f
-    end
+    print file[:mode].to_s.ljust(10)
+    print file[:nlink].to_s.rjust(nlink_padding)
+    print file[:uid].to_s.rjust(uid_paddinng)
+    print file[:gid].to_s.rjust(gid_paddinng)
+    print file[:size].to_s.rjust(6)
+    print file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
+    print " #{file[:name]}"
+    print " -> #{file[:symlink]}" if file[:symlink]
     puts ''
   end
 end
