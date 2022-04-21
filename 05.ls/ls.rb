@@ -100,13 +100,11 @@ def generate_mode_characters(stat_raw)
 end
 
 def calculate_total_block_size(long_format_files)
-  total_block_size = 0
   base_directory = generate_base_directory
-  long_format_files.each do |file| # todo sumメソッドに置き換え（条件に合致しないとき(するとき)は0を返す)
+  long_format_files.sum do |file|
     file_path = generate_file_path(base_directory, file[:name])
-    total_block_size += file[:block] if File.file?(file_path) && !File.symlink?(file_path)
+    File.file?(file_path) && !File.symlink?(file_path) ? file[:block] : 0
   end
-  total_block_size
 end
 
 def generate_base_directory
