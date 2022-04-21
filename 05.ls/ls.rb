@@ -78,11 +78,9 @@ end
 
 def generate_mode(stat)
   mode_characters = generate_mode_characters(stat)
-  mode = ''
-  mode_characters.each_value do |mode_character|
-    mode += mode_character
+  mode_characters.each_value.inject do |mode, mode_character|
+    mode + mode_character
   end
-  mode
 end
 
 def generate_mode_characters(stat)
