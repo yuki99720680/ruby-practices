@@ -95,9 +95,9 @@ def generate_mode_characters(stat)
   { file_type: file_type, owner_parmition: owner_parmition, group_parmitio: group_parmition, other_parmition: other_parmition }
 end
 
-def calculate_total_block_size(long_format_files)
+def calculate_total_block_size(file_stats)
   base_directory = generate_base_directory
-  long_format_files.sum do |file|
+  file_stats.sum do |file|
     file_path = generate_file_path(base_directory, file[:name])
     File.file?(file_path) && !File.symlink?(file_path) ? file[:block] : 0
   end
@@ -111,10 +111,10 @@ def generate_file_path(base_directory, file_name)
   "#{base_directory}#{file_name}"
 end
 
-def l_option_output(total_block_size, long_format_files)
-  nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(long_format_files)
+def l_option_output(total_block_size, file_stats)
+  nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(file_stats)
   puts "total #{total_block_size}"
-  long_format_files.each do |file|
+  file_stats.each do |file|
     print file[:mode].to_s.ljust(10)
     print file[:nlink].to_s.rjust(nlink_padding)
     print file[:uid].to_s.rjust(uid_paddinng)
@@ -127,11 +127,11 @@ def l_option_output(total_block_size, long_format_files)
   end
 end
 
-def calculate_padding_size(long_format_files)
+def calculate_padding_size(file_stats)
   nlink_sizes = []
   uid_sizes = []
   gid_sizes = []
-  long_format_files.each do |file|
+  file_stats.each do |file|
     nlink_sizes << file[:nlink].to_s.size
     uid_sizes << file[:uid].to_s.size
     gid_sizes << file[:gid].to_s.size
