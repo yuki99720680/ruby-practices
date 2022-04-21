@@ -5,6 +5,7 @@ require 'optparse'
 require 'etc'
 
 COLUMN_COUNT = 3
+
 FILE_TYPE_TABLE = {
   '01' => 'p',
   '02' => 'c',
@@ -14,6 +15,7 @@ FILE_TYPE_TABLE = {
   '12' => 'l',
   '14' => 's'
 }.freeze
+
 PARMITION_TABLE = {
   '0' => '---',
   '1' => '--x',
@@ -36,10 +38,9 @@ def main
   return unless files
 
   if long_format_flag
-    long_format_files = add_stats(files)
+    long_format_files = add_stats(files) # todo 名前が微妙=>file_stats ,todo 名前が微妙＝＞build_file_stats
     total_block_size = calculate_total_block_size(long_format_files)
-    padded_files = l_option_add_padding(long_format_files)
-    l_option_output(total_block_size, padded_files)
+    l_option_output(total_block_size, long_format_files)
   else
     basename_files = basename_files(files)
     padded_files = add_padding(basename_files)
@@ -47,12 +48,12 @@ def main
   end
 end
 
-def generate_path
+def generate_path # todo 名前が微妙＝＞generate_base_directory
   ARGV[0] || './'
 end
 
 def enumerate_files
-  path = generate_path
+  path = generate_path # todo 名前が微妙＝＞generate_base_directory
   if Dir.exist?(path)
     Dir.glob("#{path}*")
   else
@@ -60,10 +61,10 @@ def enumerate_files
   end
 end
 
-def add_stats(files)
-  long_format_files = []
-  files.each do |file|
-    stat_raw = File.symlink?(file) ? File.lstat(file) : File.stat(file)
+def add_stats(files) # todo 名前が微妙＝＞build_file_stats
+  long_format_files = [] # todo 名前が微妙=>file_stats
+  files.each do |file| # todo mapに置き換える
+    stat_raw = File.symlink?(file) ? File.lstat(file) : File.stat(file) # todo 名前が微妙 stat_raw=>
     stat = {}
     stat[:mode] = generate_mode(stat_raw)
     stat[:nlink] = stat_raw.nlink
@@ -73,8 +74,8 @@ def add_stats(files)
     stat[:block] = stat_raw.blocks
     stat[:mtime] = stat_raw
     stat[:name] = File.basename(file)
-    path = generate_path
-    file_path = "#{path}#{stat[:name]}"
+    path = generate_path # todo 名前が微妙＝＞generate_base_directory
+    file_path = "#{path}#{stat[:name]}" # todo メソッド化 generate_file_path
     stat[:symlink] = File.readlink(file_path) if File.symlink?(file_path)
     long_format_files << stat
   end
@@ -104,18 +105,18 @@ end
 
 def calculate_total_block_size(long_format_files)
   total_block_size = 0
-  path = generate_path
-  long_format_files.each do |file|
-    file_path = "#{path}#{file[:name]}"
+  path = generate_path # todo 名前が微妙＝＞generate_base_directory
+  long_format_files.each do |file| # todo sumメソッドに置き換え（条件に合致しないとき(するとき)は0を返す)
+    file_path = "#{path}#{file[:name]}" # todo メソッド化 generate_file_path
     total_block_size += file[:block] if File.file?(file_path) && !File.symlink?(file_path)
   end
   total_block_size
 end
 
-def l_option_add_padding(long_format_files)
+def l_option_output(total_block_size, long_format_files)
   nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(long_format_files)
-  formated_files = []
-  long_format_files.each do |file|
+  puts "total #{total_block_size}"
+  long_format_files.each do |file| # todo mapに置き換える
     stat = {}
     stat[:mode] = file[:mode].to_s.ljust(10)
     stat[:nlink] = file[:nlink].to_s.rjust(nlink_padding)
@@ -125,10 +126,11 @@ def l_option_add_padding(long_format_files)
     stat[:mtime] = file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
     stat[:name] = " #{file[:name]}"
     stat[:symlink] = " -> #{file[:symlink]}" if file[:symlink]
-    formated_files << stat
+    stat.each_value do |s|
+      print s
+    end
+    puts ''
   end
-
-  formated_files
 end
 
 def calculate_padding_size(long_format_files)
@@ -144,16 +146,6 @@ def calculate_padding_size(long_format_files)
   uid_paddinng = uid_sizes.max + 1
   gid_paddinng = gid_sizes.max + 2
   [nlink_padding, uid_paddinng, gid_paddinng]
-end
-
-def l_option_output(total_block_size, padded_files)
-  puts "total #{total_block_size}"
-  padded_files.each do |file|
-    file.each_value do |f|
-      print f
-    end
-    puts ''
-  end
 end
 
 def basename_files(files)
