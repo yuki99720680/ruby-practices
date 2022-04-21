@@ -76,8 +76,8 @@ def build_file_stats(files)
   end
 end
 
-def generate_mode(stat_raw)
-  mode_characters = generate_mode_characters(stat_raw)
+def generate_mode(stat)
+  mode_characters = generate_mode_characters(stat)
   mode = ''
   mode_characters.each_value do |mode_character|
     mode += mode_character
@@ -85,8 +85,8 @@ def generate_mode(stat_raw)
   mode
 end
 
-def generate_mode_characters(stat_raw)
-  mode_numbers = stat_raw.mode.to_s(8).rjust(6, '0').split(//)
+def generate_mode_characters(stat)
+  mode_numbers = stat.mode.to_s(8).rjust(6, '0').split(//)
   file_type = FILE_TYPE_TABLE[mode_numbers[0..1].join]
   owner_parmition = PARMITION_TABLE[mode_numbers[3]].dup
   group_parmition = PARMITION_TABLE[mode_numbers[4]].dup
