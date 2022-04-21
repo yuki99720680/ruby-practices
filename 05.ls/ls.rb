@@ -38,7 +38,7 @@ def main
   return unless files
 
   if long_format_flag
-    long_format_files = add_stats(files) # todo 名前が微妙=>file_stats ,todo 名前が微妙＝＞build_file_stats
+    long_format_files = build_file_stats(files) # todo 名前が微妙=>file_stats
     total_block_size = calculate_total_block_size(long_format_files)
     l_option_output(total_block_size, long_format_files)
   else
@@ -48,12 +48,8 @@ def main
   end
 end
 
-def generate_path # todo 名前が微妙＝＞generate_base_directory
-  ARGV[0] || './'
-end
-
 def enumerate_files
-  path = generate_path # todo 名前が微妙＝＞generate_base_directory
+  path = generate_base_directory
   if Dir.exist?(path)
     Dir.glob("#{path}*")
   else
@@ -61,7 +57,7 @@ def enumerate_files
   end
 end
 
-def add_stats(files) # todo 名前が微妙＝＞build_file_stats
+def build_file_stats(files)
   long_format_files = [] # todo 名前が微妙=>file_stats
   files.each do |file| # todo mapに置き換える
     stat_raw = File.symlink?(file) ? File.lstat(file) : File.stat(file) # todo 名前が微妙 stat_raw=>
@@ -74,7 +70,7 @@ def add_stats(files) # todo 名前が微妙＝＞build_file_stats
     stat[:block] = stat_raw.blocks
     stat[:mtime] = stat_raw
     stat[:name] = File.basename(file)
-    path = generate_path # todo 名前が微妙＝＞generate_base_directory
+    path = generate_base_directory
     file_path = "#{path}#{stat[:name]}" # todo メソッド化 generate_file_path
     stat[:symlink] = File.readlink(file_path) if File.symlink?(file_path)
     long_format_files << stat
@@ -105,12 +101,16 @@ end
 
 def calculate_total_block_size(long_format_files)
   total_block_size = 0
-  path = generate_path # todo 名前が微妙＝＞generate_base_directory
+  path = generate_base_directory
   long_format_files.each do |file| # todo sumメソッドに置き換え（条件に合致しないとき(するとき)は0を返す)
     file_path = "#{path}#{file[:name]}" # todo メソッド化 generate_file_path
     total_block_size += file[:block] if File.file?(file_path) && !File.symlink?(file_path)
   end
   total_block_size
+end
+
+def generate_base_directory
+  ARGV[0] || './'
 end
 
 def l_option_output(total_block_size, long_format_files)
