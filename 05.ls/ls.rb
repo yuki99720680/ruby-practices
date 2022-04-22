@@ -95,9 +95,9 @@ def generate_mode_characters(stat)
 end
 
 def calculate_total_block_size(file_stats)
-  file_stats.sum do |file|
-    file_path = generate_file_path(file[:name])
-    File.file?(file_path) && !File.symlink?(file_path) ? file[:block] : 0
+  file_stats.sum do |file_stat|
+    file_path = generate_file_path(file_stat[:name])
+    File.file?(file_path) && !File.symlink?(file_path) ? file_stat[:block] : 0
   end
 end
 
