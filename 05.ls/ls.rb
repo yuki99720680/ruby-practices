@@ -60,19 +60,18 @@ end
 def build_file_stats(files)
   files.map do |file|
     stat = File.symlink?(file) ? File.lstat(file) : File.stat(file)
-    file_info = {}
-    file_info[:mode] = generate_mode(stat)
-    file_info[:nlink] = stat.nlink
-    file_info[:uid] = Etc.getpwuid(stat.uid).name
-    file_info[:gid] = Etc.getgrgid(stat.gid).name
-    file_info[:size] = stat.size
-    file_info[:block] = stat.blocks
-    file_info[:mtime] = stat
-    file_info[:name] = File.basename(file)
-    base_directory = generate_base_directory
-    file_path = generate_file_path(base_directory, file_info[:name])
-    file_info[:symlink] = File.readlink(file_path) if File.symlink?(file_path)
-    file_info
+    file_stats = {}
+    file_stats[:mode] = generate_mode(stat)
+    file_stats[:nlink] = stat.nlink
+    file_stats[:uid] = Etc.getpwuid(stat.uid).name
+    file_stats[:gid] = Etc.getgrgid(stat.gid).name
+    file_stats[:size] = stat.size
+    file_stats[:block] = stat.blocks
+    file_stats[:mtime] = stat
+    file_stats[:name] = File.basename(file)
+    file_path = generate_file_path(file_stats[:name])
+    file_stats[:symlink] = File.readlink(file_path) if File.symlink?(file_path)
+    file_stats
   end
 end
 
@@ -96,9 +95,8 @@ def generate_mode_characters(stat)
 end
 
 def calculate_total_block_size(file_stats)
-  base_directory = generate_base_directory
   file_stats.sum do |file|
-    file_path = generate_file_path(base_directory, file[:name])
+    file_path = generate_file_path(file[:name])
     File.file?(file_path) && !File.symlink?(file_path) ? file[:block] : 0
   end
 end
@@ -107,22 +105,23 @@ def generate_base_directory
   ARGV[0] || './'
 end
 
-def generate_file_path(base_directory, file_name)
+def generate_file_path(file_name)
+  base_directory = generate_base_directory
   "#{base_directory}#{file_name}"
 end
 
 def l_option_output(total_block_size, file_stats)
   nlink_padding, uid_paddinng, gid_paddinng = calculate_padding_size(file_stats)
   puts "total #{total_block_size}"
-  file_stats.each do |file|
-    print file[:mode].to_s.ljust(10)
-    print file[:nlink].to_s.rjust(nlink_padding)
-    print file[:uid].to_s.rjust(uid_paddinng)
-    print file[:gid].to_s.rjust(gid_paddinng)
-    print file[:size].to_s.rjust(6)
-    print file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
-    print " #{file[:name]}"
-    print " -> #{file[:symlink]}" if file[:symlink]
+  file_stats.each do |file_stat|
+    print file_stat[:mode].to_s.ljust(10)
+    print file_stat[:nlink].to_s.rjust(nlink_padding)
+    print file_stat[:uid].to_s.rjust(uid_paddinng)
+    print file_stat[:gid].to_s.rjust(gid_paddinng)
+    print file_stat[:size].to_s.rjust(6)
+    print file_stat[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
+    print " #{file_stat[:name]}"
+    print " -> #{file_stat[:symlink]}" if file_stat[:symlink]
     puts
   end
 end
@@ -131,10 +130,10 @@ def calculate_padding_size(file_stats)
   nlink_sizes = []
   uid_sizes = []
   gid_sizes = []
-  file_stats.each do |file|
-    nlink_sizes << file[:nlink].to_s.size
-    uid_sizes << file[:uid].to_s.size
-    gid_sizes << file[:gid].to_s.size
+  file_stats.each do |file_stat|
+    nlink_sizes << file_stat[:nlink].to_s.size
+    uid_sizes << file_stat[:uid].to_s.size
+    gid_sizes << file_stat[:gid].to_s.size
   end
   nlink_padding = nlink_sizes.max + 2
   uid_paddinng = uid_sizes.max + 1
