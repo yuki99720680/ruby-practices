@@ -123,7 +123,7 @@ def l_option_output(total_block_size, file_stats)
     print file[:mtime].mtime.strftime(' %_m %e %H:%M').to_s
     print " #{file[:name]}"
     print " -> #{file[:symlink]}" if file[:symlink]
-    puts ''
+    puts
   end
 end
 
