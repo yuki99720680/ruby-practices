@@ -42,14 +42,13 @@ def main
     total_block_size = calculate_total_block_size(file_stats)
     l_option_output(total_block_size, file_stats)
   else
-    basename_files = basename_files(files)
+    basename_files = files.map { |file| File.basename(file) }
     padded_files = add_padding(basename_files)
     output(padded_files)
   end
 end
 
 def enumerate_files
-  base_directory = generate_base_directory
   if Dir.exist?(base_directory)
     Dir.glob("#{base_directory}*")
   else
@@ -101,12 +100,11 @@ def calculate_total_block_size(file_stats)
   end
 end
 
-def generate_base_directory
-  ARGV[0] || './'
+def base_directory
+  @base_directory ||= ARGV[0] || './'
 end
 
 def generate_file_path(file_name)
-  base_directory = generate_base_directory
   "#{base_directory}#{file_name}"
 end
 
@@ -139,14 +137,6 @@ def calculate_padding_size(file_stats)
   uid_paddinng = uid_sizes.max + 1
   gid_paddinng = gid_sizes.max + 2
   [nlink_padding, uid_paddinng, gid_paddinng]
-end
-
-def basename_files(files)
-  basename_files = []
-  files.each do |file|
-    basename_files << File.basename(file)
-  end
-  basename_files
 end
 
 def add_padding(basename_files)
