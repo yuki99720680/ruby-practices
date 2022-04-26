@@ -28,33 +28,42 @@ PARMITION_TABLE = {
 }.freeze
 
 def main
+  glob_flag = 0
+  reverse_flag = false
   long_format_flag = false
 
   opts = OptionParser.new
+  opts.on('-a') { glob_flag = File::FNM_DOTMATCH }
+  opts.on('-r') { reverse_flag = true }
   opts.on('-l') { long_format_flag = true }
   opts.parse!(ARGV)
 
-  files = enumerate_files
+  files = enumerate_files(glob_flag)
   return unless files
 
+  ordered_files = order_files(files, reverse_flag)
+
   if long_format_flag
-    file_stats = build_file_stats(files)
+    file_stats = build_file_stats(ordered_files)
     total_block_size = calculate_total_block_size(file_stats)
     l_option_output(total_block_size, file_stats)
   else
-    basename_files = basename_files(files)
+    basename_files = ordered_files.map { |ordered_file| File.basename(ordered_file) }
     padded_files = add_padding(basename_files)
     output(padded_files)
   end
 end
 
-def enumerate_files
-  base_directory = generate_base_directory
+def enumerate_files(glob_flag)
   if Dir.exist?(base_directory)
-    Dir.glob("#{base_directory}*")
+    Dir.glob("#{base_directory}*", glob_flag)
   else
     puts "ls: #{base_directory}: No such file or directory"
   end
+end
+
+def order_files(files, reverse_flag)
+  reverse_flag ? files.reverse : files
 end
 
 def build_file_stats(files)
@@ -101,12 +110,11 @@ def calculate_total_block_size(file_stats)
   end
 end
 
-def generate_base_directory
-  ARGV[0] || './'
+def base_directory
+  @base_directory ||= ARGV[0] || './'
 end
 
 def generate_file_path(file_name)
-  base_directory = generate_base_directory
   "#{base_directory}#{file_name}"
 end
 
@@ -139,14 +147,6 @@ def calculate_padding_size(file_stats)
   uid_paddinng = uid_sizes.max + 1
   gid_paddinng = gid_sizes.max + 2
   [nlink_padding, uid_paddinng, gid_paddinng]
-end
-
-def basename_files(files)
-  basename_files = []
-  files.each do |file|
-    basename_files << File.basename(file)
-  end
-  basename_files
 end
 
 def add_padding(basename_files)
